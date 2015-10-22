@@ -1,6 +1,6 @@
 #include <utility>
 #include "data.hpp"
-//#include "regexAlgorithm.hpp"
+#include "regexAlgorithm.hpp"
 
 namespace regex
 {
@@ -124,12 +124,12 @@ namespace regex
 		// {
 		// 	GenerateEpsilonNfaAlgorithm().Call(this);
 		// }
-		
-		// void Expression::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Visit(this);
-		// }
 
+		bool Expression::Compare(Expression& expression)
+		{
+			return (new CompareExpressionAlgorithm())->Call(this, expression);
+		}
+		
 		void CharsetExp::AddCharRange(CharRange& cr, bool isReverse)
 		{
 			charRangeL.push_back(std::make_pair(cr, isReverse));
@@ -140,55 +140,55 @@ namespace regex
 			AddCharRange(cr, isReverse);
 		}
 
-		// void OrExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void OrExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void JoinExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void JoinExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void LoopExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void LoopExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void CharsetExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void CharsetExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void UsingExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void UsingExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void PositiveExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void PositiveExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 
-		// void NegativeExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void NegativeExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 		
-		// void CaptureExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void CaptureExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 		
-		// void BeginExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void BeginExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 		
-		// void EndExp::Apply(RegexAlgorithmBase * algorithm)
-		// {
-		// 	algorithm->Apply(this);
-		// }
+		void EndExp::Accept(ExpressionVisitor * algorithm)
+		{
+			algorithm->Visit(this);
+		}
 				
 
 	}

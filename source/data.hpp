@@ -11,7 +11,7 @@ namespace regex
 	namespace regex_internal
 	{
 		class CharRange;
-		class RegexAlgorithmBase;
+		class ExpressionVisitor;
 		
 		class Expression
 		{
@@ -21,7 +21,9 @@ namespace regex
 			Expression();
 			// 注释回来
 			//			Automaton::ref GenerateEpsilonNfa();
-			//			void Apply(RegexAlgorithmBase * algorithm);
+			bool Compare(Expression& expression);
+			
+			virtual void Accept(ExpressionVisitor* algorithm)=0;
 		};
 
 		class OrExp : public Expression
@@ -29,12 +31,14 @@ namespace regex
 		public:
 			Expression::ref opt1;
 			Expression::ref opt2;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class JoinExp : public Expression
 		{
 		public:
 			Expression::ref left;
 			Expression::ref right;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class LoopExp : public Expression
 		{
@@ -43,6 +47,7 @@ namespace regex
 			int min;
 			int max;
 			bool greedy;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class CharsetExp : public Expression
 		{
@@ -51,6 +56,7 @@ namespace regex
 			bool reverse;
 			void AddCharRange(CharRange& cr, bool isReverse);
 			void AddCharRange(CharRange&& cr, bool isReverse);
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class UsingExp : public Expression
 		{
@@ -58,28 +64,36 @@ namespace regex
 			bool isCreate;
 			std::string name;
 			Expression::ref innerExp;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class PositiveExp : public Expression
 		{
 		public:
 			Expression::ref innerExp;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class NegativeExp : public Expression
 		{
 		public:
 			Expression::ref innerExp;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class CaptureExp : public Expression
 		{
 		public:
 			std::string name;
 			Expression::ref innerExp;
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class BeginExp : public Expression
 		{
+		public:
+			void Accept(ExpressionVisitor* algorithm);
 		};
 		class EndExp : public Expression
 		{
+		public:
+			void Accept(ExpressionVisitor* algorithm);
 		};
 
 
