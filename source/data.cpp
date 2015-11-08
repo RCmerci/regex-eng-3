@@ -1,107 +1,13 @@
+#include <cassert>
 #include <utility>
 #include "data.hpp"
 #include "regexAlgorithm.hpp"
+#include "automaton.hpp"
 
 namespace regex
 {
 	namespace regex_internal
 	{
-		/*------------------------------------------
-		  Aux
-		  --------------------------------------------*/
-		bool CharRangeBoolPairCompare(std::pair<CharRange, bool>& v1, std::pair<CharRange, bool>& v2)
-		{
-			return v1.first < v2.first;
-		}
-
-		
-		/*------------------------------------------
-		  CharRange
-		  --------------------------------------------*/
-		CharRange::CharRange()
-			:begin(0),
-			 end(0)
-		{}
-
-		CharRange::CharRange(char b, char e)
-		{
-			begin = b > e ? e : b;
-			end   = b > e ? b : e;
-		}
-
-		bool CharRange::operator<(CharRange & item) const
-		{
-			if (end < item.begin) return true;
-			return false;
-		}
-
-		bool CharRange::operator>(CharRange & item) const
-		{
-			if (begin > item.end) return true;
-			return false;
-		}
-
-		bool CharRange::operator==(CharRange & item) const
-		{
-			if (begin == item.begin && end == item.end) return true;
-			return false;
-		}
-
-		bool CharRange::operator<=(CharRange & item) const
-		{
-			if (*this < item) return true;
-			if (*this == item) return true;
-			return false;
-		}
-
-		bool CharRange::operator>=(CharRange & item) const
-		{
-			if (*this > item) return true;
-			if (*this == item) return true;
-			return false;
-		}
-
-		bool CharRange::operator!=(CharRange & item) const
-		{
-			return !(*this == item);
-		}
-
-		bool CharRange::operator<(char c) const
-		{
-			return end < c;
-		}
-
-		bool CharRange::operator>(char c) const
-		{
-			return begin > c;
-		}
-
-		bool CharRange::operator==(char c) const
-		{
-			if (begin == c && end == c) return true;
-			return false;
-		}
-
-		bool CharRange::operator<=(char c) const
-		{
-			if (*this < c) return true;
-			if (*this == c) return true;
-			return false;
-		}
-
-		bool CharRange::operator>=(char c) const
-		{
-			if (*this > c) return true;
-			if (*this == c) return true;
-			return false;
-		}
-
-		bool CharRange::operator!=(char c) const
-		{
-			return !(*this == c);
-		}
-
-
 
 		/*---------------------------------------------------
 		  Expression
@@ -119,27 +25,76 @@ namespace regex
 
 		Expression::Expression()
 		{}
-		//   注释回来
-		// Automaton::ref Expression::GenerateEpsilonNfa()
-		// {
-		// 	GenerateEpsilonNfaAlgorithm().Call(this);
-		// }
+		Automaton::ref Expression::GenerateEpsilonNfa()
+		{
+			Automaton::ref automaton = new Automaton;
+			Status::ref begin = automaton->NewStatus(false, true);
+			Status::ref end   = automaton->NewStatus(true, false);
+			assert(automaton->endStatusList.size() == 1);
+			PAPSS parameter = PAPSS(automaton, begin, end);
+			Automaton::ref atm = GenerateEpsilonNfaAlgorithm().Call(this, parameter);
+
+
+			// TODO : 删除以下
+			for (auto e : atm->edgeList) {
+				assert(e->typeList.size()<=1);
+			}
+			
+			return atm;
+		}
 
 		bool Expression::Compare(Expression& expression)
 		{
-			return (new CompareExpressionAlgorithm())->Call(this, expression);
+			return CompareExpressionAlgorithm().Call(this, &expression);
 		}
+
+		void Expression::MergeCharset()
+		{
+			MergeCharsetAlgorithm().Call(this, nullptr);
+		}
+
+		void Expression::TransferUsingExp()
+		{
+			TransferUsingExpAlgorithm::Name2Expression map = new std::map<std::string, Expression::ref>();
+			TransferUsingExpAlgorithm().Call(this, map);
+			delete map;
+		}
+
+		Expression::ref Expression::RecursiveCopyExpression()
+		{
+			return RecursiveCopyExpressionAlgorithm().Call(this, nullptr);
+		}
+
+		void Expression::Delete()
+		{
+			DeleteExpressionAlgorithm().Call(this, nullptr);
+		}
+
+		void Expression::SetNumberOnAnonymousCaptureExpression()
+		{
+			SetNumberOnAnonymousCaptureExpressionAlgorithm().Call(this, 1);
+		}
+		
+		
 		
 		void CharsetExp::AddCharRange(CharRange& cr, bool isReverse)
 		{
-			charRangeL.push_back(std::make_pair(cr, isReverse));
-			charRangeL.sort(CharRangeBoolPairCompare);
+			charRangeL.push_back(std::make_pair(std::list<CharRange>(1, cr), isReverse));
 		}
+		
 		void CharsetExp::AddCharRange(CharRange&& cr, bool isReverse)
 		{
 			AddCharRange(cr, isReverse);
 		}
 
+		void CharsetExp::AddCharRange(std::list<CharRange>& crl, bool isReverse)
+		{
+			charRangeL.push_back(std::make_pair(crl, isReverse));
+		}
+		/*----------------------------------------
+		  Accept
+		 ----------------------------------------*/ 
+		
 		void OrExp::Accept(ExpressionVisitor * algorithm)
 		{
 			algorithm->Visit(this);
@@ -189,7 +144,15 @@ namespace regex
 		{
 			algorithm->Visit(this);
 		}
-				
+
+
+		// /*----------------------------------------
+		//   destructor
+		//   -----------------------------------------*/ 
+
+		Expression::~Expression()
+		{
+		}
 
 	}
 }

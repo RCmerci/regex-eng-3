@@ -1,25 +1,15 @@
 #ifndef REGEX_REGEXALGORITHM
 #define REGEX_REGEXALGORITHM
 
+#include <utility>
+#include <map>
 #include "data.hpp"
+#include "automaton.hpp"
 
 namespace regex
 {
 	namespace regex_internal
 	{
-		// class Expression;
-		// class OrExp;
-		// class JoinExp;
-		// class LoopExp;
-		// class CharsetExp;
-		// class UsingExp;
-		// class PositiveExp;
-		// class NegativeExp;
-		// class CaptureExp;
-		// class BeginExp;
-		// class EndExp;
-
-
 
 		class ExpressionVisitor
 		{
@@ -41,27 +31,25 @@ namespace regex
 		class RegexAlgorithmBase : public ExpressionVisitor
 		{
 		public:
-			// typedef R*   ReturnType;
-			// typedef P*   ParameterType;
-			
-			// ParameterType parameter;
-			// ReturnType    result;
-
-			P* parameterPtr;
+			P parameter;
 			R result;
+
+			RegexAlgorithmBase()
+				:parameter(),
+				 result()
+			{}
+			R Call(Expression * expression, P parameter);
 			
-			R Call(Expression * expression, P& parameter);
-			
-			virtual R Apply(OrExp * expression, P& parameter)=0;
-			virtual R Apply(JoinExp * expression, P& parameter)=0;
-			virtual R Apply(LoopExp * expression, P& parameter)=0;
-			virtual R Apply(CharsetExp * expression, P& parameter)=0;
-			virtual R Apply(UsingExp * expression, P& parameter)=0;
-			virtual R Apply(PositiveExp * expression, P& parameter)=0;
-			virtual R Apply(NegativeExp * expression, P& parameter)=0;
-			virtual R Apply(CaptureExp * expression, P& parameter)=0;
-			virtual R Apply(BeginExp * expression, P& parameter)=0;
-			virtual R Apply(EndExp * expression, P& parameter)=0;
+			virtual R Apply(OrExp * expression, P parameter)=0;
+			virtual R Apply(JoinExp * expression, P parameter)=0;
+			virtual R Apply(LoopExp * expression, P parameter)=0;
+			virtual R Apply(CharsetExp * expression, P parameter)=0;
+			virtual R Apply(UsingExp * expression, P parameter)=0;
+			virtual R Apply(PositiveExp * expression, P parameter)=0;
+			virtual R Apply(NegativeExp * expression, P parameter)=0;
+			virtual R Apply(CaptureExp * expression, P parameter)=0;
+			virtual R Apply(BeginExp * expression, P parameter)=0;
+			virtual R Apply(EndExp * expression, P parameter)=0;
 			
 			void Visit(OrExp * expression);
 			void Visit(JoinExp * expression);
@@ -76,13 +64,13 @@ namespace regex
 
 		};
 
-				/*-------------------------------------------------------
+		/*-------------------------------------------------------
 		  RegexAlgorithmBase
 		-------------------------------------------------------*/
 		template<typename P, typename R>
-		R RegexAlgorithmBase<P, R>::Call(Expression* e, P& _parameter)
+		R RegexAlgorithmBase<P, R>::Call(Expression* e, P _parameter)
 		{
-			parameterPtr = &_parameter;
+			parameter = _parameter;
 			e->Accept(this);
 			return result;
 		}
@@ -90,52 +78,52 @@ namespace regex
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(OrExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(JoinExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(LoopExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(CharsetExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}		
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(UsingExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}		
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(PositiveExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}		
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(NegativeExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(CaptureExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(BeginExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}
 		template<typename P, typename R>
 		void RegexAlgorithmBase<P, R>::Visit(EndExp * expression)
 		{
-			result = Apply(expression, *parameterPtr);
+			result = Apply(expression, parameter);
 		}		
 
 
@@ -143,35 +131,147 @@ namespace regex
 		  GenerateEpsilonNfaAlgorithm
 		 ------------------------------------------------------------------*/
 		
-		class GenerateEpsilonNfaAlgorithm : public RegexAlgorithmBase<int, int>
+		class GenerateEpsilonNfaAlgorithm : public RegexAlgorithmBase<PAPSS, Automaton::ref>
 		{
 		public:
-			int Apply(OrExp * expression, int& parameter);
-			int Apply(JoinExp * expression, int& parameter);
-			int Apply(LoopExp * expression, int& parameter);
-			int Apply(CharsetExp * expression, int& parameter);
-			int Apply(UsingExp * expression, int& parameter);
-			int Apply(PositiveExp * expression, int& parameter);
-			int Apply(NegativeExp * expression, int& parameter);
-			int Apply(CaptureExp * expression, int& parameter);
-			int Apply(BeginExp * expression, int& parameter);
-			int Apply(EndExp * expression, int& parameter);
+			//			GenerateEpsilonNfaAlgorithm(){}
+			Automaton::ref Apply(OrExp * expression, PAPSS parameter);
+			Automaton::ref Apply(JoinExp * expression, PAPSS parameter);
+			Automaton::ref Apply(LoopExp * expression, PAPSS parameter);
+			Automaton::ref Apply(CharsetExp * expression, PAPSS parameter);
+			Automaton::ref Apply(UsingExp * expression, PAPSS parameter);
+			Automaton::ref Apply(PositiveExp * expression, PAPSS parameter);
+			Automaton::ref Apply(NegativeExp * expression, PAPSS parameter);
+			Automaton::ref Apply(CaptureExp * expression, PAPSS parameter);
+			Automaton::ref Apply(BeginExp * expression, PAPSS parameter);
+			Automaton::ref Apply(EndExp * expression, PAPSS parameter);
 		};
 
-		class CompareExpressionAlgorithm : public RegexAlgorithmBase<Expression, bool>
+		
+		/*-----------------------------------------------------------------
+		  CompareExpressionAlgorithm
+		 ------------------------------------------------------------------*/
+		
+		class CompareExpressionAlgorithm : public RegexAlgorithmBase<Expression::ref, bool>
 		{
-			bool Apply(OrExp * expression, Expression& parameter);
-			bool Apply(JoinExp * expression, Expression& parameter);
-			bool Apply(LoopExp * expression, Expression& parameter);
-			bool Apply(CharsetExp * expression, Expression& parameter);
-			bool Apply(UsingExp * expression, Expression& parameter);
-			bool Apply(PositiveExp * expression, Expression& parameter);
-			bool Apply(NegativeExp * expression, Expression& parameter);
-			bool Apply(CaptureExp * expression, Expression& parameter);
-			bool Apply(BeginExp * expression, Expression& parameter);
-			bool Apply(EndExp * expression, Expression& parameter);
+		public:
+			//	CompareExpressionAlgorithm(){}
+			bool Apply(OrExp * expression, Expression::ref parameter);
+			bool Apply(JoinExp * expression, Expression::ref parameter);
+			bool Apply(LoopExp * expression, Expression::ref parameter);
+			bool Apply(CharsetExp * expression, Expression::ref parameter);
+			bool Apply(UsingExp * expression, Expression::ref parameter);
+			bool Apply(PositiveExp * expression, Expression::ref parameter);
+			bool Apply(NegativeExp * expression, Expression::ref parameter);
+			bool Apply(CaptureExp * expression, Expression::ref parameter);
+			bool Apply(BeginExp * expression, Expression::ref parameter);
+			bool Apply(EndExp * expression, Expression::ref parameter);
 			
 		};
+		
+		/*-----------------------------------------------------------------
+		  MergeCharsetAlgorithm
+		 ------------------------------------------------------------------*/
+
+		class MergeCharsetAlgorithm : public RegexAlgorithmBase<void*, void*>
+		{
+		public:
+			void* Apply(OrExp * expression, void* parameter);
+			void* Apply(JoinExp * expression, void* parameter);
+			void* Apply(LoopExp * expression, void* parameter);
+			void* Apply(CharsetExp * expression, void* parameter);
+			void* Apply(UsingExp * expression, void* parameter);
+			void* Apply(PositiveExp * expression, void* parameter);
+			void* Apply(NegativeExp * expression, void* parameter);
+			void* Apply(CaptureExp * expression, void* parameter);
+			void* Apply(BeginExp * expression, void* parameter);
+			void* Apply(EndExp * expression, void* parameter);
+			
+		};
+		
+		/*-----------------------------------------------------------------
+		  TransferUsingExpAlgorithm
+		 ------------------------------------------------------------------*/
+		
+		class TransferUsingExpAlgorithm
+			: public RegexAlgorithmBase<std::map<std::string, Expression::ref>*, Expression::ref>
+		{
+		public:
+			using Name2Expression = std::map<std::string, Expression::ref>*;
+			
+			Expression::ref Apply(OrExp * expression, Name2Expression parameter);
+			Expression::ref Apply(JoinExp * expression, Name2Expression parameter);
+			Expression::ref Apply(LoopExp * expression, Name2Expression parameter);
+			Expression::ref Apply(CharsetExp * expression, Name2Expression parameter);
+			Expression::ref Apply(UsingExp * expression, Name2Expression parameter);
+			Expression::ref Apply(PositiveExp * expression, Name2Expression parameter);
+			Expression::ref Apply(NegativeExp * expression, Name2Expression parameter);
+			Expression::ref Apply(CaptureExp * expression, Name2Expression parameter);
+			Expression::ref Apply(BeginExp * expression, Name2Expression parameter);
+			Expression::ref Apply(EndExp * expression, Name2Expression parameter);
+		};
+		
+		/*-----------------------------------------------------------------
+		  RecursiveCopyExpressionAlgorithm
+		 ------------------------------------------------------------------*/
+		class RecursiveCopyExpressionAlgorithm
+			: public RegexAlgorithmBase<void*, Expression::ref>
+		{
+		public:
+			Expression::ref Apply(OrExp * expression, void* parameter);
+			Expression::ref Apply(JoinExp * expression, void* parameter);
+			Expression::ref Apply(LoopExp * expression, void* parameter);
+			Expression::ref Apply(CharsetExp * expression, void* parameter);
+			Expression::ref Apply(UsingExp * expression, void* parameter);
+			Expression::ref Apply(PositiveExp * expression, void* parameter);
+			Expression::ref Apply(NegativeExp * expression, void* parameter);
+			Expression::ref Apply(CaptureExp * expression, void* parameter);
+			Expression::ref Apply(BeginExp * expression, void* parameter);
+			Expression::ref Apply(EndExp * expression, void* parameter);			
+		};
+
+		/*-----------------------------------------------------------------
+		  DeleteExpressionAlgorithm
+		 ------------------------------------------------------------------*/
+		class DeleteExpressionAlgorithm : public RegexAlgorithmBase<void*, void*>
+		{
+		public:
+			void* Apply(OrExp * expression, void* parameter);
+			void* Apply(JoinExp * expression, void* parameter);
+			void* Apply(LoopExp * expression, void* parameter);
+			void* Apply(CharsetExp * expression, void* parameter);
+			void* Apply(UsingExp * expression, void* parameter);
+			void* Apply(PositiveExp * expression, void* parameter);
+			void* Apply(NegativeExp * expression, void* parameter);
+			void* Apply(CaptureExp * expression, void* parameter);
+			void* Apply(BeginExp * expression, void* parameter);
+			void* Apply(EndExp * expression, void* parameter);
+		};
+		
+
+
+		/*-----------------------------------------------------------------
+		  SetNumberOnAnonymousCaptureExpressionAlgorithm
+		  给匿名捕获的表达式加上序号作为名字(1,2,3...), 
+		  因为仅仅 "1" 作为名字不符合命名捕获的名字规则，
+		  所以序号和所命名的名字不会冲突
+		 ------------------------------------------------------------------*/
+		class SetNumberOnAnonymousCaptureExpressionAlgorithm
+			:public RegexAlgorithmBase<int, void*>
+		{
+		public:
+			void* Apply(OrExp * expression, int parameter);
+			void* Apply(JoinExp * expression, int parameter);
+			void* Apply(LoopExp * expression, int parameter);
+			void* Apply(CharsetExp * expression, int parameter);
+			void* Apply(UsingExp * expression, int parameter);
+			void* Apply(PositiveExp * expression, int parameter);
+			void* Apply(NegativeExp * expression, int parameter);
+			void* Apply(CaptureExp * expression, int parameter);
+			void* Apply(BeginExp * expression, int parameter);
+			void* Apply(EndExp * expression, int parameter);
+		};
+		
 	}
 }
 

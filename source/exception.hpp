@@ -20,6 +20,26 @@ namespace regex
 				:std::runtime_error(s)
 				{}
 		};
+
+		class GenerateEpsilonNfaException : public std::runtime_error
+		{
+		public:
+			explicit GenerateEpsilonNfaException(const std::string& s)
+				:std::runtime_error(s)
+				{}
+		};
+
+		class ExpressionAlgorithmException : public std::runtime_error
+		{
+		public:
+			explicit ExpressionAlgorithmException(const std::string& s)
+				:std::runtime_error(s)
+				{}
+		};
+
+		
+		
+		
 	}
 }
 

@@ -151,13 +151,17 @@ namespace regex
 			std::string rst;
 			for (i=0;i<len;i++) {
 				if (regexStr[i] == '\\' && len > i+1) {
-					if (!isInChars(regexStr[i+1], "sSwWdD\\")) {
-						rst.push_back(regexStr[i+1]);
+					if (!isInChars(regexStr[i+1], "sSwWdD()[]*?+{}|")) {
+						// rst.push_back(regexStr[i+1]);
 						i++;
+						// continue;
+					}
+					else if (isInChars(regexStr[i+1], "\\")) {
+						i+=2;
 						continue;
 					}
 				}
-				else if (isCharPure(regexStr, '.')) {
+				else if (isInChars(regexStr[i], ".")) {
 					rst.push_back('\\');
 				}
 				rst.push_back(regexStr[i]);
@@ -225,11 +229,11 @@ namespace regex
 				min = range.first;
 				max = range.second;
 			}
-			else if (isCharPure(regexStr, '?')) {
-				
+			else if (isChar(regexStr, '?')) {
+				min = 0;
+				max = 1;
 			}
 			else {
-				//__2323
 				return nullptr;
 			}
 			if (isChar(regexStr, '?')) {
@@ -259,6 +263,9 @@ namespace regex
 				if (!isChar(regexStr, ')')) {
 					goto ParseGroup_expected_right_bracket;
 				}
+				if (!expression) {
+					return nullptr;
+				}
 				CaptureExp* captureExp = new CaptureExp;
 				captureExp->name = name;
 				captureExp->innerExp = expression;
@@ -271,6 +278,9 @@ namespace regex
 					goto ParseGroup_expected_right_bracket;
 
 				}
+				if (!expression) {
+					return nullptr;
+				}
 				CaptureExp* captureExp = new CaptureExp;
 				captureExp->name = "";
 				captureExp->innerExp = expression;
@@ -281,6 +291,9 @@ namespace regex
 				if (!isChar(regexStr, ')')) {
 					goto ParseGroup_expected_right_bracket;
 				}
+				if (!expression) {
+					return nullptr;
+				}
 				PositiveExp* positiveExp = new PositiveExp;
 				positiveExp->innerExp = expression;
 				return positiveExp;
@@ -289,6 +302,9 @@ namespace regex
 				Expression* expression = ParseOr(regexStr);
 				if (!isChar(regexStr, ')')) {
 					goto ParseGroup_expected_right_bracket;
+				}
+				if (!expression) {
+					return nullptr;
 				}
 				NegativeExp* negativeExp = new NegativeExp;
 				negativeExp->innerExp = expression;
@@ -334,6 +350,9 @@ namespace regex
 				if (!isChar(regexStr, ')')) {
 					goto ParseGroup_expected_right_bracket;
 				}
+				if (!expression) {
+					return nullptr;
+				}
 				return expression;
 			}
 			else {
@@ -353,10 +372,10 @@ namespace regex
 		}
 
 
-		static std::pair<std::vector<CharRange>, bool> HandleEscapeChar(char c)
+		static std::pair<std::list<CharRange>, bool> HandleEscapeChar(char c)
 		{
 			bool isReverse = false;
-			std::vector<CharRange> vcr;
+			std::list<CharRange> vcr;
 			switch (c) {
 			case 'D':
 				isReverse = true;
@@ -390,21 +409,20 @@ namespace regex
 			}
 		}
 		static bool HandleInnerCharset(std::string& regexStr, CharsetExp* charsetExp)
+		// 不处理紧随 '['之后是']',这个情况在调用这个函数前考虑了
 		{
 			if (regexStr.length() == 0)
 				return true;
-			bool isReverse;
+			// bool isReverse;
 			while (true) {
-				isReverse = false;
+				// isReverse = false;
 				if (isChar(regexStr, '\\')) {
 					if (regexStr.length() == 0) {
 						goto HandleInnerCharset_expression_expected_after_backslash;
 					}
 					char c = regexStr[0];
 					auto vcrPair = HandleEscapeChar(c);
-					for (int i=0;i<vcrPair.first.size();i++) {
-						charsetExp->AddCharRange(vcrPair.first[i], vcrPair.second);
-					}
+					charsetExp->AddCharRange(vcrPair.first, vcrPair.second);
 					reduceChar(regexStr, 1);
 				}
 				else if (isChar(regexStr, '-')) {
@@ -479,8 +497,12 @@ namespace regex
 			}
 			else if (isChar(regexStr, '[')) {
 				CharsetExp* charsetExp = new CharsetExp;
+				charsetExp->reverse = false;
 				if (isChar(regexStr, '^')) {
 					charsetExp->reverse = true;
+				}
+				if (isChar(regexStr, ']')) { // ']'在'['紧接之后,则这个']'是普通字符
+					charsetExp->AddCharRange(CharRange(']', ']'), false);
 				}
 				HandleInnerCharset(regexStr, charsetExp);
 				if (!isChar(regexStr, ']')) {
@@ -496,15 +518,15 @@ namespace regex
 					throw ParserException("not complete regular expression.\n");
 				}
 				CharsetExp* charsetExp = new CharsetExp;
+				charsetExp->reverse = false;
 				auto vcrPair = HandleEscapeChar(regexStr[0]);
+				charsetExp->AddCharRange(vcrPair.first, vcrPair.second);
 				reduceChar(regexStr, 1);
-				for (int i=0;i<vcrPair.first.size();i++) {
-					charsetExp->AddCharRange(vcrPair.first[i], vcrPair.second);
-				}
 				return charsetExp;
 			}
 			else {
 				CharsetExp* charsetExp = new CharsetExp;
+				charsetExp->reverse = false;
 				charsetExp->AddCharRange(CharRange(regexStr[0], regexStr[0]), false);
 				reduceChar(regexStr, 1);
 				return charsetExp;
@@ -523,6 +545,9 @@ namespace regex
 					loopExp->innerExp = rst;
 					rst = loopExp;
 				}
+			}
+			if (!rst && regexStr.length() > 0 && !isInCharsPure(regexStr, ")]*?+{}|")) {
+				return ParsePar(regexStr);
 			}
 			return rst;
 		}
