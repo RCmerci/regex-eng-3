@@ -3,9 +3,9 @@
 #include <memory>
 #include <fstream>
 #include <streambuf>
-#include "../parser.hpp"
-#include "../match.hpp"
-#include "../regex.hpp"
+#include "parser.hpp"
+#include "match.hpp"
+#include "regex.hpp"
 
 using namespace regex::regex_internal;
 using namespace regex;
@@ -34,7 +34,9 @@ std::shared_ptr<Regex> CreateInterpreter(std::string s)
 
 int main()
 {
+	#ifdef REGEX_DEBUG
 	testAux();
+	#endif
 	ParseRegexStr("abc()")->Delete();
 	ParseRegexStr("abc(a)")->Delete();
 	ParseRegexStr("abc(b)+?")->Delete();
