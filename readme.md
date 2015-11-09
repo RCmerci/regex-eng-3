@@ -9,6 +9,8 @@
 ========================================
 
 语法：
+
+```
 ^                          ->  匹配开始
 
 $                          ->匹配结束
@@ -57,13 +59,12 @@ $                          ->匹配结束
 (#<name>...)               ->  表达式命名 
 
 (&<name>)                  ->  表达式使用（即替换成对应表达式）
-
-
+```
 
 ==========================================
 
 API:
-
+```
 class RegexResult:
 
 
@@ -93,7 +94,7 @@ FindAll(testString, beginIndex=0) -> RegexResult
 Replace(testString, replaceStr, replaceTime=1, beginIndex=0) -> resultString
 
 ReplaceAll(testString, replaceStr, beginIndex=0) -> resultString
-
+```
 
 
 ============================================
@@ -101,7 +102,7 @@ ReplaceAll(testString, replaceStr, beginIndex=0) -> resultString
 
 
 examples:
-
+```
 auto rst = Regex("^.+?@(?<type>.+?)\\.(?(com|cn))$").Match("563748559@qq.com");
 
 rst.Group().size() == 1;
@@ -115,7 +116,7 @@ rst.Group(1)[0] == "com";
 rst.Group("type").size() == 1;
 
 rst.Group("type")[0] == "563748559";
-
+```
 
 
 more examples in source/test/test.cpp
