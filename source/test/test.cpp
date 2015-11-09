@@ -687,17 +687,19 @@ int main()
 		
 	}
 
-
 	{
 		std::string testString =
 			"<dt><a href=\"http://bbs.uestc.edu.cn/forum.php?mod=forumdisplay&fid=219\">出国留学</a><em class=\"xw0 xi1\" title=\"今日\"> (今日: 9)</em></dt>""<dd><a href=\"http://bbs.uestc.edu.cn/forum.php?mod=redirect&amp;tid=1570205&amp;goto=lastpost#lastpost\" class=\"xi2\">ETH网申</a></dd><dd><cite>by: <a href=\"http://bbs.uestc.edu.cn/home.php?mod=space&username=camelluxin\">camelluxin</a> [<span title=\"2015-11-8 21:30\">1&nbsp;小时前</span>]</cite></dd>";
 		Regex regex("href=\"(?<url>https?://.+?)\"");
 		auto result = regex.FindAll(testString);
 		assert(result.Bool() == true);
-		for (auto i : result.Group("url")) {
+
+	}
+	{
+		auto rst = Regex("(ab){2,}").FindAll("yyababababababababbab");
+		for (auto i :rst.Group()) {
 			std::cout<<i<<std::endl;
 		}
-
 	}
 	std::cout<<"all test case passed."<<std::endl;
 }
